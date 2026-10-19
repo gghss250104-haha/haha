@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Student profile and game statistics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique student identifier derived from credentials" },
+        "nickname": { "type": "string", "maxLength": 30, "description": "Display name of student" },
+        "passwordHash": { "type": "string", "maxLength": 128, "description": "Hashed password or secure token for authentication" },
+        "totalRaces": { "type": "number", "description": "Total completed races" },
+        "wins": { "type": "number", "description": "Total 1st place finishes" },
+        "bestSystemicTime": { "type": "number", "description": "Best time in seconds for systemic circulation (0 if none)" },
+        "bestPulmonaryTime": { "type": "number", "description": "Best time in seconds for pulmonary circulation (0 if none)" },
+        "lastCharacter": { "type": "string", "enum": ["RBC", "WBC"], "description": "Last selected character" },
+        "lastMap": { "type": "string", "enum": ["systemic", "pulmonary"], "description": "Last selected map" },
+        "createdAt": { "type": "string", "description": "Account creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last activity timestamp" }
+      },
+      "required": ["id", "nickname", "passwordHash", "totalRaces", "wins"]
+    },
+    "Ranking": {
+      "title": "Ranking",
+      "description": "Leaderboard record for top circulatory racers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ranking record ID" },
+        "studentId": { "type": "string", "description": "Reference to student entity" },
+        "nickname": { "type": "string", "maxLength": 30, "description": "Student nickname" },
+        "mapType": { "type": "string", "enum": ["systemic", "pulmonary"], "description": "Map played" },
+        "character": { "type": "string", "enum": ["RBC", "WBC"], "description": "Character used" },
+        "finishTimeSeconds": { "type": "number", "description": "Race finish duration in seconds" },
+        "createdAt": { "type": "string", "description": "Record timestamp" }
+      },
+      "required": ["id", "studentId", "nickname", "mapType", "character", "finishTimeSeconds"]
+    },
+    "MatchRoom": {
+      "title": "MatchRoom",
+      "description": "Active or completed multiplayer race match room",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Match room ID" },
+        "mapType": { "type": "string", "enum": ["systemic", "pulmonary"], "description": "Track map" },
+        "status": { "type": "string", "enum": ["waiting", "racing", "finished"], "description": "Room status" },
+        "playerCount": { "type": "number", "description": "Number of human and bot players" },
+        "players": { "type": "string", "description": "Serialized JSON of active participants and progress" },
+        "createdAt": { "type": "string", "description": "Room creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["id", "mapType", "status", "playerCount", "players"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": { "$ref": "entities/Student" },
+      "description": "Collection of student accounts and persistent statistics"
+    },
+    "/rankings/{rankingId}": {
+      "schema": { "$ref": "entities/Ranking" },
+      "description": "Hall of fame rankings for fast queries"
+    },
+    "/matches/{matchId}": {
+      "schema": { "$ref": "entities/MatchRoom" },
+      "description": "Real-time multiplayer race matches"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "순환계 레이서 (Circulatory System Racer)",
+  "description": "동물의 순환계를 배우는 과학 교육 레이싱 게임 - 적혈구와 백혈구의 온몸순환 및 폐순환 탐험 레이스",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow get: if isSignedIn() && isValidId(studentId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() 
+        && isValidId(studentId)
+        && request.resource.data.keys().hasAll(['id', 'nickname', 'passwordHash', 'totalRaces', 'wins'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() >= 1 && request.resource.data.nickname.size() <= 30
+        && request.resource.data.passwordHash is string && request.resource.data.passwordHash.size() <= 128
+        && request.resource.data.totalRaces is number
+        && request.resource.data.wins is number;
+      
+      allow update: if isSignedIn() 
+        && isValidId(studentId)
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() >= 1 && request.resource.data.nickname.size() <= 30
+        && request.resource.data.totalRaces is number
+        && request.resource.data.wins is number;
+      
+      allow delete: if false;
+    }
+
+    // Rankings Collection
+    match /rankings/{rankingId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && isValidId(rankingId)
+        && request.resource.data.keys().hasAll(['id', 'studentId', 'nickname', 'mapType', 'character', 'finishTimeSeconds'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() <= 30
+        && request.resource.data.finishTimeSeconds is number && request.resource.data.finishTimeSeconds > 0
+        && (request.resource.data.mapType == 'systemic' || request.resource.data.mapType == 'pulmonary')
+        && (request.resource.data.character == 'RBC' || request.resource.data.character == 'WBC');
+      
+      allow update, delete: if false;
+    }
+
+    // Match Rooms Collection for multiplayer & matchmaking
+    match /matches/{matchId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && isValidId(matchId)
+        && request.resource.data.keys().hasAll(['id', 'mapType', 'status', 'playerCount', 'players'])
+        && (request.resource.data.mapType == 'systemic' || request.resource.data.mapType == 'pulmonary')
+        && request.resource.data.playerCount is number && request.resource.data.playerCount >= 1 && request.resource.data.playerCount <= 4
+        && request.resource.data.players is string;
+      
+      allow update: if isSignedIn() 
+        && isValidId(matchId)
+        && request.resource.data.playerCount is number && request.resource.data.playerCount >= 1 && request.resource.data.playerCount <= 4
+        && request.resource.data.players is string;
+
+      allow delete: if false;
+    }
+  }
+}
